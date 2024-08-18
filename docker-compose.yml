@@ -35,6 +35,8 @@ services:
   gotrue:
     restart: on-failure
     image: appflowyinc/gotrue:${GOTRUE_VERSION:-latest}
+    ports:
+      - '9999:9999'
     environment:
       # There are a lot of options to configure GoTrue. You can reference the example config:
       # https://github.com/supabase/gotrue/blob/master/example.env
@@ -76,6 +78,8 @@ services:
 
   appflowy_cloud:
     restart: on-failure
+    ports:
+      - '9998:443'
     environment:
       - RUST_LOG=${RUST_LOG:-info}
       - APPFLOWY_ENVIRONMENT=production
