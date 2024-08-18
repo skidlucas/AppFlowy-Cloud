@@ -35,8 +35,6 @@ services:
   gotrue:
     restart: on-failure
     image: appflowyinc/gotrue:${GOTRUE_VERSION:-latest}
-    ports:
-      - '9999:9999'
     environment:
       # There are a lot of options to configure GoTrue. You can reference the example config:
       # https://github.com/supabase/gotrue/blob/master/example.env
@@ -75,11 +73,22 @@ services:
       - GOTRUE_EXTERNAL_DISCORD_CLIENT_ID=${GOTRUE_EXTERNAL_DISCORD_CLIENT_ID}
       - GOTRUE_EXTERNAL_DISCORD_SECRET=${GOTRUE_EXTERNAL_DISCORD_SECRET}
       - GOTRUE_EXTERNAL_DISCORD_REDIRECT_URI=${GOTRUE_EXTERNAL_DISCORD_REDIRECT_URI}
+    labels:
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.gotrue.entryPoints=http
+      - traefik.http.routers.gotrue.middlewares=redirect-to-https
+      - traefik.http.routers.gotrue.rule=Host(`gotrue.lukapps.fr`)
+      - traefik.http.routers.gotrue.service=gotrue
+      - traefik.http.routers.gotrue.tls.certresolver=letsencrypt
+      - traefik.http.routers.gotrue.tls=true
+      - traefik.http.services.gotrue.loadbalancer.server.port=9999
 
   appflowy_cloud:
     restart: on-failure
     ports:
-      - '9998:443'
+      - '8000:8000'
     environment:
       - RUST_LOG=${RUST_LOG:-info}
       - APPFLOWY_ENVIRONMENT=production
@@ -107,15 +116,17 @@ services:
       - APPFLOWY_AI_SERVER_PORT=${APPFLOWY_AI_SERVER_PORT}
       - APPFLOWY_OPENAI_API_KEY=${APPFLOWY_OPENAI_API_KEY}
     image: appflowyinc/appflowy_cloud:${APPFLOWY_CLOUD_VERSION:-latest}
-
-  admin_frontend:
-    restart: on-failure
-    image: appflowyinc/admin_frontend:${APPFLOWY_ADMIN_FRONTEND_VERSION:-latest}
-    environment:
-      - RUST_LOG=${RUST_LOG:-info}
-      - ADMIN_FRONTEND_REDIS_URL=${ADMIN_FRONTEND_REDIS_URL:-redis://redis:6379}
-      - ADMIN_FRONTEND_GOTRUE_URL=${ADMIN_FRONTEND_GOTRUE_URL:-http://gotrue:9999}
-      - ADMIN_FRONTEND_APPFLOWY_CLOUD_URL=${ADMIN_FRONTEND_APPFLOWY_CLOUD_URL:-http://appflowy_cloud:8000}
+    labels:
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.appflowy_cloud.entryPoints=http
+      - traefik.http.routers.appflowy_cloud.middlewares=redirect-to-https
+      - traefik.http.routers.appflowy_cloud.rule=Host(`appflowy.lukapps.fr`)
+      - traefik.http.routers.appflowy_cloud.service=appflowy_cloud
+      - traefik.http.routers.appflowy_cloud.tls.certresolver=letsencrypt
+      - traefik.http.routers.appflowy_cloud.tls=true
+      - traefik.http.services.appflowy_cloud.loadbalancer.server.port=8000
 
   ai:
     restart: on-failure
