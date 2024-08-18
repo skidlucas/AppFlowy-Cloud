@@ -27,9 +27,6 @@ services:
 
   postgres:
     restart: on-failure
-    build:
-      context: ./postgres
-      dockerfile: postgres.Dockerfile
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_DB=${POSTGRES_DB:-postgres}
@@ -45,9 +42,6 @@ services:
 
   gotrue:
     restart: on-failure
-    build:
-      context: .
-      dockerfile: docker/gotrue.Dockerfile
     image: appflowyinc/gotrue:${GOTRUE_VERSION:-latest}
     environment:
       # There are a lot of options to configure GoTrue. You can reference the example config:
@@ -116,18 +110,10 @@ services:
       - APPFLOWY_AI_SERVER_HOST=${APPFLOWY_AI_SERVER_HOST}
       - APPFLOWY_AI_SERVER_PORT=${APPFLOWY_AI_SERVER_PORT}
       - APPFLOWY_OPENAI_API_KEY=${APPFLOWY_OPENAI_API_KEY}
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        FEATURES: ""
     image: appflowyinc/appflowy_cloud:${APPFLOWY_CLOUD_VERSION:-latest}
 
   admin_frontend:
     restart: on-failure
-    build:
-      context: .
-      dockerfile: ./admin_frontend/Dockerfile
     image: appflowyinc/admin_frontend:${APPFLOWY_ADMIN_FRONTEND_VERSION:-latest}
     environment:
       - RUST_LOG=${RUST_LOG:-info}
@@ -146,9 +132,6 @@ services:
   appflowy_history:
     restart: on-failure
     image: appflowyinc/appflowy_history:${APPFLOWY_HISTORY_VERSION:-latest}
-    build:
-      context: .
-      dockerfile: ./services/appflowy-history/Dockerfile
     environment:
       - RUST_LOG=${RUST_LOG:-info}
       - APPFLOWY_HISTORY_REDIS_URL=redis://redis:6379
